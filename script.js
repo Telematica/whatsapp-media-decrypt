@@ -4,13 +4,12 @@ const { exec } = require("child_process");
 const { url } = require("inspector");
 const { argv } = require("process");
 
-if (argv[0]) {
+if (!argv[2]) {
   console.log("No file!");
   return;
 }
 
-const Doc = require(`./${argv[0]}`);
-
+const Doc = require(`./${argv[2]}`);
 
 // https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
 

@@ -9,15 +9,13 @@ fileName = sys.argv[1]
 mediaKey = sys.argv[2]
 type = sys.argv[3]
 
-if type == "video":
-    x = b"WhatsApp Video Keys"
-elif type == "image":
-    x = b"WhatsApp Image Keys"
-elif type == "audio":
-    x = b"WhatsApp Audio Keys"
-
-print("x")
-print(x)
+def formatType(arg):
+    formats = {
+        'video': b"WhatsApp Video Keys",
+        'audio': b"WhatsApp Audio Keys",
+        'image': b"WhatsApp Image Keys",
+    }
+    return formats[arg]
 
 def HKDF(key, length, appInfo=b""):
     key = hmac.new(b"\0" * 32, key, hashlib.sha256).digest()
@@ -45,7 +43,7 @@ def AESDecrypt(key, ciphertext, iv):
     return AESUnpad(plaintext)
 
 
-mediaKeyExpanded = HKDF(base64.b64decode(mediaKey), 112, x)
+mediaKeyExpanded = HKDF(base64.b64decode(mediaKey), 112, formatType(type))
 macKey = mediaKeyExpanded[48:80]
 mediaData = open(fileName, "rb").read()
 
