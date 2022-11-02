@@ -21,49 +21,52 @@ const Doc = require(`./${argv[2]}`);
       mediaKey: file.mediaKey,
       type: file.type,
       url: file.deprecatedMms3Url
-        .match(/\b\/\w.*\.enc\b/)[0]
-        .replace("/d/f/", ""),
+        ? file.deprecatedMms3Url
+            .match(/\b\/\w.*\.enc\b/)[0]
+            .replace("/d/f/", "")
+        : null,
     };
   });
 
-  const downloadFile = (url) => new Promise((resolve, reject) => {
-    console.log(`Downloading... curl -O ${url}`);
-    exec(`curl -O ${url}`, (error, stdout, stderr) => {
-      console.log(stdout);
-      console.log(stderr);
-      if (error !== null) {
-        console.log(`exec error: ${error}`);
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
-
-  const decryptFile = (file, mediaKey, type) => new Promise((resolve, reject) => {
-    console.log(`Decrypting... python3 decrypt_customized.py ${file} "${mediaKey}" ${type}`);
-    exec(
-      `python3 ./decrypt_customized.py ${file} "${mediaKey}" ${type}`,
-      (error, stdout, stderr) => {
+  const downloadFile = (url) =>
+    new Promise((resolve, reject) => {
+      console.log(`Downloading... curl -O ${url}`);
+      exec(`curl -O ${url}`, (error, stdout, stderr) => {
         console.log(stdout);
         console.log(stderr);
         if (error !== null) {
           console.log(`exec error: ${error}`);
         }
         resolve(stdout ? stdout : stderr);
-      }
-    );
-  });
-  
-  const renameFile = (file, extension) => {
-    exec(
-      `mv ./${file}.bin "${file}.${extension}"`,
-      (error, stdout, stderr) => {
-        console.log(stdout);
-        console.log(stderr);
-        if (error !== null) {
-          console.log(`exec error: ${error}`);
+      });
+    });
+
+  const decryptFile = (file, mediaKey, type) =>
+    new Promise((resolve, reject) => {
+      console.log(
+        `Decrypting... python3 decrypt_customized.py ${file} "${mediaKey}" ${type}`
+      );
+      exec(
+        `python3 ./decrypt_customized.py ${file} "${mediaKey}" ${type}`,
+        (error, stdout, stderr) => {
+          console.log(stdout);
+          console.log(stderr);
+          if (error !== null) {
+            console.log(`exec error: ${error}`);
+          }
+          resolve(stdout ? stdout : stderr);
         }
+      );
+    });
+
+  const renameFile = (file, extension) => {
+    exec(`mv ./${file}.bin "${file}.${extension}"`, (error, stdout, stderr) => {
+      console.log(stdout);
+      console.log(stderr);
+      if (error !== null) {
+        console.log(`exec error: ${error}`);
       }
-    );
+    });
   };
 
   const renameFileBulk = (extension) => {
@@ -83,7 +86,7 @@ const Doc = require(`./${argv[2]}`);
     switch (type) {
       case "audio":
         return "ogg";
-      case "image": 
+      case "image":
         return "jpeg";
       case "video":
         return "mp4";
@@ -102,8 +105,11 @@ const Doc = require(`./${argv[2]}`);
     await decryptFile(file.url, file.mediaKey, type);
   };
 
-  await Promise.all(
-    files.map((file) => downloadDecryptAndRenameFile(file))
-  );
-  files.map((file) => renameFile(file.url.replace(".enc", ""), extension(file.type)));
+  await Promise.all(files.map((file) => downloadDecryptAndRenameFile(file)));
+  files.map((file) => {
+    if (file.type === "chat") {
+      return;
+    }
+    renameFile(file.url.replace(".enc", ""), extension(file.type));
+  });
 })();

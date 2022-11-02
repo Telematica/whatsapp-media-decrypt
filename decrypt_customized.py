@@ -14,6 +14,9 @@ def formatType(arg):
         'video': b"WhatsApp Video Keys",
         'audio': b"WhatsApp Audio Keys",
         'image': b"WhatsApp Image Keys",
+        'ptt': b"WhatsApp Audio Keys",
+        'document': b"WhatsApp Document Keys",
+        'sticker': b"WhatsApp Image Keys",
     }
     return formats[arg]
 
