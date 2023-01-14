@@ -9,7 +9,9 @@ if (!argv[2]) {
   return;
 }
 
-const Doc = require(`./${argv[2]}`);
+const SCRIPT_DIRECTORY = __dirname;
+const CURRENT_WORKING_DIRECTORY = process.cwd();
+const Doc = require(`${CURRENT_WORKING_DIRECTORY}/${argv[2]}`);
 
 // https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
 
@@ -47,7 +49,7 @@ const Doc = require(`./${argv[2]}`);
         `Decrypting... python3 decrypt_customized.py ${file} "${mediaKey}" ${type}`
       );
       exec(
-        `python3 ./decrypt_customized.py ${file} "${mediaKey}" ${type}`,
+        `python3 ${SCRIPT_DIRECTORY}/decrypt_customized.py ${file} "${mediaKey}" ${type}`,
         (error, stdout, stderr) => {
           console.log(stdout);
           console.log(stderr);
