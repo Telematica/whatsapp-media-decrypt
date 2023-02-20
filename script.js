@@ -16,24 +16,26 @@ const Doc = require(`${CURRENT_WORKING_DIRECTORY}/${argv[2]}`);
 // https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
 
 (async () => {
+  // https://befused.com/javascript/get-filename-url/#:~:text=The%20filename%20is%20the%20last,html%20is%20the%20file%20name.
+  function getFileWithExtensionFromUrl(url) {
+    return url.substring(url.lastIndexOf('/')+1).replace(/\?.*$/, "")
+  }
+
   const files = Doc.map((file) => {
     return {
       body: file.body,
       deprecatedMms3Url: file.deprecatedMms3Url,
       mediaKey: file.mediaKey,
+      name: `${file.rowId}.enc`,
       type: file.type,
-      url: file.deprecatedMms3Url
-        ? file.deprecatedMms3Url
-            .match(/\b\/\w.*\.enc\b/)[0]
-            .replace("/d/f/", "")
-        : null,
+      url: file.deprecatedMms3Url ? file.deprecatedMms3Url : null,
     };
   });
 
-  const downloadFile = (url) =>
+  const downloadFile = (file) =>
     new Promise((resolve, reject) => {
-      console.log(`Downloading... curl -O ${url}`);
-      exec(`curl -O ${url}`, (error, stdout, stderr) => {
+      console.log(`Downloading... curl ${file.url} --output ${file.name}`);
+      exec(`curl "${file.url}" --output ${file.name}`, (error, stdout, stderr) => {
         console.log(stdout);
         console.log(stderr);
         if (error !== null) {
@@ -103,8 +105,8 @@ const Doc = require(`${CURRENT_WORKING_DIRECTORY}/${argv[2]}`);
       console.log(file.body);
       return;
     }
-    await downloadFile(file.deprecatedMms3Url);
-    await decryptFile(file.url, file.mediaKey, type);
+    await downloadFile(file);
+    await decryptFile(file.name, file.mediaKey, type);
   };
 
   await Promise.all(files.map((file) => downloadDecryptAndRenameFile(file)));
@@ -112,6 +114,6 @@ const Doc = require(`${CURRENT_WORKING_DIRECTORY}/${argv[2]}`);
     if (file.type === "chat") {
       return;
     }
-    renameFile(file.url.replace(".enc", ""), extension(file.type));
+    renameFile(file.name.replace(".enc", ""), extension(file.type));
   });
 })();
