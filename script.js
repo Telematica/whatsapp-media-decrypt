@@ -26,7 +26,7 @@ const Doc = require(`${CURRENT_WORKING_DIRECTORY}/${argv[2]}`);
       body: file.body,
       deprecatedMms3Url: file.deprecatedMms3Url,
       mediaKey: file.mediaKey,
-      name: `${file.rowId}.enc`,
+      name: `${file.id.id}.enc`,
       type: file.type,
       url: file.deprecatedMms3Url ? file.deprecatedMms3Url : null,
     };
